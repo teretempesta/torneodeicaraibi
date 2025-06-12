@@ -190,367 +190,364 @@
 
         // --- FINE CONFIGURAZIONE ---
 
-
         const loaderOverlay = document.getElementById('loader-overlay');
 
-        // Controllo di configurazione
-        if (firebaseConfig.apiKey === "INCOLLA_QUI_LA_TUA_API_KEY") {
+        if (!firebaseConfig || firebaseConfig.apiKey === "INCOLLA_QUI_LA_TUA_API_KEY") {
             loaderOverlay.innerHTML = `
                 <div class="text-center p-4">
                     <i class="fas fa-exclamation-triangle text-4xl text-yellow-400 mb-4"></i>
                     <h2 class="text-xl font-bold text-white mb-2">Configurazione Mancante</h2>
-                    <p class="text-gray-300">Devi inserire i dati del tuo progetto Firebase nel file <strong>index.html</strong> per far funzionare l'app.</p>
+                    <p class="text-gray-300 max-w-md">Devi inserire i dati del tuo progetto Firebase nel file <strong>index.html</strong> per far funzionare l'app. Cerca la variabile 'firebaseConfig' nello script.</p>
                 </div>
             `;
-            throw new Error("Configurazione Firebase non inserita.");
-        }
-        
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        
-        const venueCoords = { lat: 40.2736, lon: 18.4239 }; // Torre dell'Orso
+        } else {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            
+            const venueCoords = { lat: 40.2736, lon: 18.4239 }; // Torre dell'Orso
 
-        const teamStaticData = {
-            'As Tricase': {logo: 'https://placehold.co/100x100/FF0000/FFFFFF?text=AT',citta: 'Tricase (LE)',regione: 'Puglia',color: '#FF0000',info: 'Storica società del Salento, con un forte focus sulla crescita dei giovani talenti locali.', coords: { lat: 39.9312, lon: 18.3533 }},
-            'Trebisacce Calcio': {logo: 'https://placehold.co/100x100/FFFF00/000000?text=TC',citta: 'Trebisacce (CS)',regione: 'Calabria',color: '#FFFF00',info: 'Rappresentativa della costa ionica cosentina, nota per la passione e il calore dei suoi tifosi.', coords: { lat: 39.8667, lon: 16.5333 }},
-            'Pontelandolfo': {logo: 'https://placehold.co/100x100/0000FF/FFFFFF?text=P',citta: 'Pontelandolfo (BN)',regione: 'Campania',color: '#0000FF',info: 'Società proveniente dal Sannio, porta con sé la grinta e la tenacia tipiche delle zone interne campane.', coords: { lat: 41.2833, lon: 14.6833 }},
-            'Real Soccer Soleto "1"': {logo: 'https://placehold.co/100x100/FFFFFF/000000?text=RS1',citta: 'Soleto (LE)',regione: 'Puglia',color: '#FFFFFF',info: 'Club della Grecìa Salentina, si distingue per la qualità del suo settore giovanile e l\'attenzione alla tecnica.', coords: { lat: 40.1873, lon: 18.2045 }},
-            'Real Soccer Soleto "2"': {logo: 'https://placehold.co/100x100/CCCCCC/000000?text=RS2',citta: 'Soleto (LE)',regione: 'Puglia',color: '#CCCCCC',info: 'Secondo team del club di Soleto, pronto a dimostrare il proprio valore.', coords: { lat: 40.1873, lon: 18.2045 }},
-            'Real Soccer Soleto': {logo: 'https://placehold.co/100x100/FFFFFF/000000?text=RSS',citta: 'Soleto (LE)',regione: 'Puglia',color: '#FFFFFF',info: 'Club della Grecìa Salentina, si distingue per la qualità del suo settore giovanile e l\'attenzione alla tecnica.', coords: { lat: 40.1873, lon: 18.2045 }},
-            'Atletico Copertino': {logo: 'https://placehold.co/100x100/FF8C00/FFFFFF?text=AC',citta: 'Copertino (LE)',regione: 'Puglia',color: '#FF8C00',info: 'Squadra con una solida tradizione nel panorama dilettantistico salentino, fa della compattezza il suo punto di forza.', coords: { lat: 40.2721, lon: 18.0456 }},
-            'Paolisi 2000': {logo: 'https://placehold.co/100x100/008000/FFFFFF?text=P2K',citta: 'Paolisi (BN)',regione: 'Campania',color: '#008000',info: 'Giovane realtà della Valle Caudina, partecipa con entusiasmo per confrontarsi e crescere.', coords: { lat: 41.0500, lon: 14.6333 }},
-        };
-        const initialMatches = [
-            // Esordienti
-            { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Esordienti', ora: '15:00', casa: 'Real Soccer Soleto "2"', ospite: 'Real Soccer Soleto "1"' }, { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Esordienti', ora: '15:40', casa: 'Real Soccer Soleto "1"', ospite: 'Pontelandolfo' }, { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Esordienti', ora: '16:20', casa: 'Real Soccer Soleto "2"', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Esordienti', ora: '09:00', casa: 'As Tricase', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Esordienti', ora: '09:40', casa: 'Atletico Copertino', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Esordienti', ora: '10:20', casa: 'As Tricase', ospite: 'Atletico Copertino' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Esordienti', ora: '15:00', casa: 'As Tricase', ospite: 'Real Soccer Soleto "2"' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Esordienti', ora: '15:40', casa: 'Real Soccer Soleto "1"', ospite: 'Atletico Copertino' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Esordienti', ora: '16:20', casa: 'As Tricase', ospite: 'Real Soccer Soleto "1"' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Esordienti', ora: '17:00', casa: 'Atletico Copertino', ospite: 'Real Soccer Soleto "2"' }, { giorno: 'Domenica', data: '2025-06-15', categoria: 'Esordienti', ora: '09:00', casa: '1ª Classificata', ospite: '2ª Classificata', isFinale: true },
-            // Pulcini
-            { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Pulcini', ora: '17:00', casa: 'Paolisi 2000', ospite: 'Real Soccer Soleto' }, { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Pulcini', ora: '17:40', casa: 'Real Soccer Soleto', ospite: 'Pontelandolfo' }, { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Pulcini', ora: '18:20', casa: 'Paolisi 2000', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Pulcini', ora: '11:00', casa: 'Atletico Copertino', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Pulcini', ora: '11:40', casa: 'As Tricase', ospite: 'Atletico Copertino' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Pulcini', ora: '12:20', casa: 'As Tricase', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Pulcini', ora: '17:40', casa: 'As Tricase', ospite: 'Paolisi 2000' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Pulcini', ora: '18:20', casa: 'Real Soccer Soleto', ospite: 'Atletico Copertino' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Pulcini', ora: '19:00', casa: 'As Tricase', ospite: 'Real Soccer Soleto' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Pulcini', ora: '19:40', casa: 'Atletico Copertino', ospite: 'Paolisi 2000' }, { giorno: 'Domenica', data: '2025-06-15', categoria: 'Pulcini', ora: '10:00', casa: '1ª Classificata', ospite: '2ª Classificata', isFinale: true },
-            // Primi Calci
-            { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Primi Calci', ora: '17:00', casa: 'Paolisi 2000', ospite: 'Pontelandolfo' }, { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Primi Calci', ora: '17:40', casa: 'Trebisacce Calcio', ospite: 'Pontelandolfo' }, { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Primi Calci', ora: '18:20', casa: 'Trebisacce Calcio', ospite: 'Paolisi 2000' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '09:00', casa: 'As Tricase', ospite: 'Trebisacce Calcio' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '09:40', casa: 'As Tricase', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '10:20', casa: 'Paolisi 2000', ospite: 'Atletico Copertino' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '11:00', casa: 'Trebisacce Calcio', ospite: 'Atletico Copertino' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '15:00', casa: 'As Tricase', ospite: 'Real Soccer Soleto' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '15:35', casa: 'Atletico Copertino', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '16:10', casa: 'Real Soccer Soleto', ospite: 'Trebisacce Calcio' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '16:45', casa: 'As Tricase', ospite: 'Atletico Copertino' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '17:20', casa: 'Real Soccer Soleto', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '17:55', casa: 'As Tricase', ospite: 'Paolisi 2000' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '18:30', casa: 'Atletico Copertino', ospite: 'Real Soccer Soleto' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '19:05', casa: 'Paolisi 2000', ospite: 'Real Soccer Soleto' }, { giorno: 'Domenica', data: '2025-06-15', categoria: 'Primi Calci', ora: '09:00', casa: '1ª Classificata', ospite: '2ª Classificata', isFinale: true }
-        ];
+            const teamStaticData = {
+                'As Tricase': {logo: 'https://placehold.co/100x100/FF0000/FFFFFF?text=AT',citta: 'Tricase (LE)',regione: 'Puglia',color: '#FF0000',info: 'Storica società del Salento, con un forte focus sulla crescita dei giovani talenti locali.', coords: { lat: 39.9312, lon: 18.3533 }},
+                'Trebisacce Calcio': {logo: 'https://placehold.co/100x100/FFFF00/000000?text=TC',citta: 'Trebisacce (CS)',regione: 'Calabria',color: '#FFFF00',info: 'Rappresentativa della costa ionica cosentina, nota per la passione e il calore dei suoi tifosi.', coords: { lat: 39.8667, lon: 16.5333 }},
+                'Pontelandolfo': {logo: 'https://placehold.co/100x100/0000FF/FFFFFF?text=P',citta: 'Pontelandolfo (BN)',regione: 'Campania',color: '#0000FF',info: 'Società proveniente dal Sannio, porta con sé la grinta e la tenacia tipiche delle zone interne campane.', coords: { lat: 41.2833, lon: 14.6833 }},
+                'Real Soccer Soleto "1"': {logo: 'https://placehold.co/100x100/FFFFFF/000000?text=RS1',citta: 'Soleto (LE)',regione: 'Puglia',color: '#FFFFFF',info: 'Club della Grecìa Salentina, si distingue per la qualità del suo settore giovanile e l\'attenzione alla tecnica.', coords: { lat: 40.1873, lon: 18.2045 }},
+                'Real Soccer Soleto "2"': {logo: 'https://placehold.co/100x100/CCCCCC/000000?text=RS2',citta: 'Soleto (LE)',regione: 'Puglia',color: '#CCCCCC',info: 'Secondo team del club di Soleto, pronto a dimostrare il proprio valore.', coords: { lat: 40.1873, lon: 18.2045 }},
+                'Real Soccer Soleto': {logo: 'https://placehold.co/100x100/FFFFFF/000000?text=RSS',citta: 'Soleto (LE)',regione: 'Puglia',color: '#FFFFFF',info: 'Club della Grecìa Salentina, si distingue per la qualità del suo settore giovanile e l\'attenzione alla tecnica.', coords: { lat: 40.1873, lon: 18.2045 }},
+                'Atletico Copertino': {logo: 'https://placehold.co/100x100/FF8C00/FFFFFF?text=AC',citta: 'Copertino (LE)',regione: 'Puglia',color: '#FF8C00',info: 'Squadra con una solida tradizione nel panorama dilettantistico salentino, fa della compattezza il suo punto di forza.', coords: { lat: 40.2721, lon: 18.0456 }},
+                'Paolisi 2000': {logo: 'https://placehold.co/100x100/008000/FFFFFF?text=P2K',citta: 'Paolisi (BN)',regione: 'Campania',color: '#008000',info: 'Giovane realtà della Valle Caudina, partecipa con entusiasmo per confrontarsi e crescere.', coords: { lat: 41.0500, lon: 14.6333 }},
+            };
+            const initialMatches = [
+                // Esordienti
+                { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Esordienti', ora: '15:00', casa: 'Real Soccer Soleto "2"', ospite: 'Real Soccer Soleto "1"' }, { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Esordienti', ora: '15:40', casa: 'Real Soccer Soleto "1"', ospite: 'Pontelandolfo' }, { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Esordienti', ora: '16:20', casa: 'Real Soccer Soleto "2"', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Esordienti', ora: '09:00', casa: 'As Tricase', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Esordienti', ora: '09:40', casa: 'Atletico Copertino', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Esordienti', ora: '10:20', casa: 'As Tricase', ospite: 'Atletico Copertino' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Esordienti', ora: '15:00', casa: 'As Tricase', ospite: 'Real Soccer Soleto "2"' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Esordienti', ora: '15:40', casa: 'Real Soccer Soleto "1"', ospite: 'Atletico Copertino' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Esordienti', ora: '16:20', casa: 'As Tricase', ospite: 'Real Soccer Soleto "1"' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Esordienti', ora: '17:00', casa: 'Atletico Copertino', ospite: 'Real Soccer Soleto "2"' }, { giorno: 'Domenica', data: '2025-06-15', categoria: 'Esordienti', ora: '09:00', casa: '1ª Classificata', ospite: '2ª Classificata', isFinale: true },
+                // Pulcini
+                { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Pulcini', ora: '17:00', casa: 'Paolisi 2000', ospite: 'Real Soccer Soleto' }, { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Pulcini', ora: '17:40', casa: 'Real Soccer Soleto', ospite: 'Pontelandolfo' }, { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Pulcini', ora: '18:20', casa: 'Paolisi 2000', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Pulcini', ora: '11:00', casa: 'Atletico Copertino', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Pulcini', ora: '11:40', casa: 'As Tricase', ospite: 'Atletico Copertino' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Pulcini', ora: '12:20', casa: 'As Tricase', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Pulcini', ora: '17:40', casa: 'As Tricase', ospite: 'Paolisi 2000' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Pulcini', ora: '18:20', casa: 'Real Soccer Soleto', ospite: 'Atletico Copertino' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Pulcini', ora: '19:00', casa: 'As Tricase', ospite: 'Real Soccer Soleto' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Pulcini', ora: '19:40', casa: 'Atletico Copertino', ospite: 'Paolisi 2000' }, { giorno: 'Domenica', data: '2025-06-15', categoria: 'Pulcini', ora: '10:00', casa: '1ª Classificata', ospite: '2ª Classificata', isFinale: true },
+                // Primi Calci
+                { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Primi Calci', ora: '17:00', casa: 'Paolisi 2000', ospite: 'Pontelandolfo' }, { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Primi Calci', ora: '17:40', casa: 'Trebisacce Calcio', ospite: 'Pontelandolfo' }, { giorno: 'Venerdì', data: '2025-06-13', categoria: 'Primi Calci', ora: '18:20', casa: 'Trebisacce Calcio', ospite: 'Paolisi 2000' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '09:00', casa: 'As Tricase', ospite: 'Trebisacce Calcio' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '09:40', casa: 'As Tricase', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '10:20', casa: 'Paolisi 2000', ospite: 'Atletico Copertino' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '11:00', casa: 'Trebisacce Calcio', ospite: 'Atletico Copertino' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '15:00', casa: 'As Tricase', ospite: 'Real Soccer Soleto' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '15:35', casa: 'Atletico Copertino', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '16:10', casa: 'Real Soccer Soleto', ospite: 'Trebisacce Calcio' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '16:45', casa: 'As Tricase', ospite: 'Atletico Copertino' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '17:20', casa: 'Real Soccer Soleto', ospite: 'Pontelandolfo' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '17:55', casa: 'As Tricase', ospite: 'Paolisi 2000' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '18:30', casa: 'Atletico Copertino', ospite: 'Real Soccer Soleto' }, { giorno: 'Sabato', data: '2025-06-14', categoria: 'Primi Calci', ora: '19:05', casa: 'Paolisi 2000', ospite: 'Real Soccer Soleto' }, { giorno: 'Domenica', data: '2025-06-15', categoria: 'Primi Calci', ora: '09:00', casa: '1ª Classificata', ospite: '2ª Classificata', isFinale: true }
+            ];
 
-        // --- ELEMENTI DOM E STATO ---
-        const matchListEl = document.getElementById('matchList');
-        const teamFilterEl = document.getElementById('teamFilter');
-        const dayFilterEl = document.getElementById('day-filter');
-        const categoryFilterEl = document.getElementById('category-filter');
-        const noResultsEl = document.getElementById('noResults');
-        const modalEl = document.getElementById('teamModal');
-        const modalBodyEl = document.getElementById('modalBody');
-        
-        let currentUserId = null;
-        let unsubscribeTifo = null;
-        let allMatches = [];
-        let currentFilters = { day: 'Venerdì', category: 'Esordienti', team: '' };
+            // --- ELEMENTI DOM E STATO ---
+            const matchListEl = document.getElementById('matchList');
+            const teamFilterEl = document.getElementById('teamFilter');
+            const dayFilterEl = document.getElementById('day-filter');
+            const categoryFilterEl = document.getElementById('category-filter');
+            const noResultsEl = document.getElementById('noResults');
+            const modalEl = document.getElementById('teamModal');
+            const modalBodyEl = document.getElementById('modalBody');
+            
+            let currentUserId = null;
+            let unsubscribeTifo = null;
+            let allMatches = [];
+            let currentFilters = { day: 'Venerdì', category: 'Esordienti', team: '' };
 
-        // --- FUNZIONI PRINCIPALI ---
-        const sanitizeForId = (str) => str.replace(/["'\s]/g, '');
+            // --- FUNZIONI PRINCIPALI ---
+            const sanitizeForId = (str) => str.replace(/["'\s]/g, '');
 
-        function getMatchId(match) {
-            return `${match.data}-${sanitizeForId(match.categoria)}-${match.ora.replace(':','-')}-${sanitizeForId(match.casa)}-${sanitizeForId(match.ospite)}`;
-        }
-
-        async function seedDatabase() {
-            console.log("Popolamento del database con i dati iniziali...");
-            for (const match of initialMatches) {
-                const matchId = getMatchId(match);
-                const matchRef = doc(db, matchesCollectionPath, matchId);
-                await setDoc(matchRef, { ...match, scoreCasa: 0, scoreOspite: 0, mvpVotes: { [match.casa]: 0, [match.ospite]: 0 }, voters: [] }, { merge: true });
+            function getMatchId(match) {
+                return `${match.data}-${sanitizeForId(match.categoria)}-${match.ora.replace(':','-')}-${sanitizeForId(match.casa)}-${sanitizeForId(match.ospite)}`;
             }
-            console.log("Popolamento completato.");
-        }
-        
-        function updateInteractiveIcon() {
-            const now = new Date();
-            const upcomingMatches = allMatches.filter(match => {
-                const [year, month, day] = match.data.split('-');
-                const [hours, minutes] = match.ora.split(':');
-                const matchTime = new Date(year, month - 1, day, hours, minutes);
-                return matchTime > now && !match.isFinale;
-            });
 
-            if (upcomingMatches.length > 0) {
-                const nextMatch = upcomingMatches[0];
-                document.getElementById('next-match-time').textContent = nextMatch.ora;
-                document.getElementById('next-match-details').innerHTML = `
-                    <span class="font-semibold">${nextMatch.casa}</span> vs 
-                    <span class="font-semibold">${nextMatch.ospite}</span>
-                    <p class="text-xs text-gray-400">${nextMatch.categoria} - ${nextMatch.giorno}</p>
-                `;
-            } else {
-                document.getElementById('next-match-time').textContent = "Fine";
-                document.getElementById('next-match-details').textContent = "Nessuna partita in programma";
+            async function seedDatabase() {
+                console.log("Popolamento del database con i dati iniziali...");
+                for (const match of initialMatches) {
+                    const matchId = getMatchId(match);
+                    const matchRef = doc(db, matchesCollectionPath, matchId);
+                    await setDoc(matchRef, { ...match, scoreCasa: 0, scoreOspite: 0, mvpVotes: { [match.casa]: 0, [match.ospite]: 0 }, voters: [] }, { merge: true });
+                }
+                console.log("Popolamento completato.");
             }
-        }
-        
-        function updateStats() {
-            const now = new Date();
-            const playedMatches = allMatches.filter(match => {
-                const [year, month, day] = match.data.split('-');
-                const [hours, minutes] = match.ora.split(':');
-                const matchTime = new Date(year, month - 1, day, hours, minutes);
-                return matchTime < now && !match.isFinale;
-            });
             
-            const totalGoals = allMatches.reduce((sum, match) => sum + (match.scoreCasa || 0) + (match.scoreOspite || 0), 0);
-            
-            document.getElementById('matches-played').textContent = playedMatches.length;
-            document.getElementById('total-goals').textContent = totalGoals;
-        }
-
-        function setupFilters() {
-            const days = [...new Set(initialMatches.map(m => m.giorno))];
-            const categories = [...new Set(initialMatches.map(m => m.categoria))];
-            
-            dayFilterEl.innerHTML = days.map(day => `<button class="filter-btn text-sm font-bold py-2 px-4 rounded-full" data-filter-type="day" data-value="${day}">${day}</button>`).join('');
-            categoryFilterEl.innerHTML = categories.map(cat => `<button class="filter-btn text-sm font-bold py-2 px-4 rounded-full" data-filter-type="category" data-value="${cat}">${cat}</button>`).join('');
-            
-            updateActiveFilters();
-        }
-
-        function updateActiveFilters() {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.value === currentFilters[btn.dataset.filterType]) {
-                    btn.classList.add('active');
-                }
-            });
-        }
-
-        function renderMatchesUI() {
-            const filtered = allMatches.filter(m => 
-                m.giorno === currentFilters.day &&
-                m.categoria === currentFilters.category &&
-                (m.casa.toLowerCase().includes(currentFilters.team) || m.ospite.toLowerCase().includes(currentFilters.team))
-            );
-            noResultsEl.classList.toggle('hidden', filtered.length > 0);
-            
-            matchListEl.innerHTML = filtered.map(match => {
-                const homeInfo = teamStaticData[match.casa];
-                const awayInfo = teamStaticData[match.ospite];
-                
-                if (match.isFinale || !homeInfo || !awayInfo) { 
-                    return `
-                    <div class="glass-card flex flex-col justify-center items-center p-4 text-center bg-gradient-to-br from-yellow-400/20 to-orange-500/20">
-                        <i class="fas fa-trophy text-4xl text-yellow-300 mb-4"></i>
-                        <h3 class="font-black text-xl text-white">FINALE</h3>
-                        <p class="text-yellow-200">${match.categoria}</p>
-                        <p class="mt-2 font-bold text-lg">${match.ora}</p>
-                    </div>`;
-                }
-
+            function updateInteractiveIcon() {
                 const now = new Date();
-                const [hours, minutes] = match.ora.split(':');
-                const [year, month, day] = match.data.split('-');
-                const matchTime = new Date(year, month - 1, day, hours, minutes);
-                const isMatchFinished = now > matchTime;
+                const upcomingMatches = allMatches.filter(match => {
+                    const [year, month, day] = match.data.split('-');
+                    const [hours, minutes] = match.ora.split(':');
+                    const matchTime = new Date(year, month - 1, day, hours, minutes);
+                    return matchTime > now && !match.isFinale;
+                });
 
-                const totalVotes = (match.mvpVotes?.[match.casa] || 0) + (match.mvpVotes?.[match.ospite] || 0);
-                const homeVotePerc = totalVotes > 0 ? ((match.mvpVotes[match.casa] || 0) / totalVotes * 100).toFixed(0) : 0;
-                const awayVotePerc = totalVotes > 0 ? ((match.mvpVotes[match.ospite] || 0) / totalVotes * 100).toFixed(0) : 0;
-                
-                return `
-                <div class="glass-card flex flex-col justify-between p-4" data-id="${match.id}">
-                    <div>
-                        <div class="flex items-center justify-between text-center mb-4">
-                            <div class="w-1/3 flex flex-col items-center">
-                                <img src="${homeInfo.logo}" alt="${match.casa}" class="team-logo mb-2">
-                                <h3 class="font-bold text-sm team-link" onclick='window.showTeamDetails(${JSON.stringify(match.casa)})'>${match.casa}</h3>
-                            </div>
-                            <div class="w-1/3">
-                                <div class="score-display text-white">${match.scoreCasa || 0} - ${match.scoreOspite || 0}</div>
-                                <div class="text-sm text-gray-400 font-bold">${match.ora}</div>
-                            </div>
-                            <div class="w-1/3 flex flex-col items-center">
-                                <img src="${awayInfo.logo}" alt="${match.ospite}" class="team-logo mb-2">
-                                <h3 class="font-bold text-sm team-link" onclick='window.showTeamDetails(${JSON.stringify(match.ospite)})'>${match.ospite}</h3>
-                            </div>
-                        </div>
-                         <div class="flex justify-around text-xs my-2">
-                            <div class="text-center">
-                                <button class="score-btn p-2" data-team-type="scoreCasa" data-action="increment"><i class="fas fa-plus-circle text-green-400 text-lg"></i></button>
-                                <button class="score-btn p-2" data-team-type="scoreCasa" data-action="decrement"><i class="fas fa-minus-circle text-red-400 text-lg"></i></button>
-                            </div>
-                            <div class="text-center">
-                                <button class="score-btn p-2" data-team-type="scoreOspite" data-action="increment"><i class="fas fa-plus-circle text-green-400 text-lg"></i></button>
-                                <button class="score-btn p-2" data-team-type="scoreOspite" data-action="decrement"><i class="fas fa-minus-circle text-red-400 text-lg"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mvp-section mt-4 pt-4 border-t border-gray-600 ${isMatchFinished ? '' : 'hidden'}">
-                        <h4 class="text-center font-bold text-sm mb-2 text-blue-300">Man of the Match</h4>
-                        <div class="text-xs space-y-2">
-                            <button class="w-full text-left p-2 rounded bg-gray-700 hover:bg-gray-600 mvp-vote-btn" data-team-name='${match.casa}' ${match.voters?.includes(currentUserId) ? 'disabled' : ''}>
-                                ${match.casa} <span class="float-right font-bold">${homeVotePerc}%</span>
-                                <div class="w-full bg-gray-500 rounded-full h-1.5 mt-1"><div class="bg-blue-400 h-1.5 rounded-full" style="width: ${homeVotePerc}%"></div></div>
-                            </button>
-                            <button class="w-full text-left p-2 rounded bg-gray-700 hover:bg-gray-600 mvp-vote-btn" data-team-name='${match.ospite}' ${match.voters?.includes(currentUserId) ? 'disabled' : ''}>
-                                ${match.ospite} <span class="float-right font-bold">${awayVotePerc}%</span>
-                                <div class="w-full bg-gray-500 rounded-full h-1.5 mt-1"><div class="bg-blue-400 h-1.5 rounded-full" style="width: ${awayVotePerc}%"></div></div>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                `;
-            }).join('');
-        }
-
-        function calculateDistance(coords1, coords2) {
-            const R = 6371; // Radius of the Earth in km
-            const dLat = (coords2.lat - coords1.lat) * Math.PI / 180;
-            const dLon = (coords2.lon - coords1.lon) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(coords1.lat * Math.PI / 180) * Math.cos(coords2.lat * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
-        }
-
-        window.showTeamDetails = (teamName) => {
-            if (unsubscribeTifo) unsubscribeTifo();
-
-            const team = teamStaticData[teamName];
-            if(!team || !team.coords) return;
-
-            const distance = calculateDistance(team.coords, venueCoords);
-            const travelTime = (distance / 80) * 60; // Assumendo una media di 80 km/h
-            const travelTimeFormatted = travelTime > 60 ? `${Math.floor(travelTime / 60)}h ${Math.round(travelTime % 60)}m` : `${Math.round(travelTime)} min`;
-
-            modalBodyEl.innerHTML = `
-                <div class="p-6 md:p-8 relative">
-                    <button onclick="window.closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
-                    <div class="flex items-center mb-6">
-                        <img src="${team.logo}" alt="${teamName}" class="w-16 h-16 mr-4 border-4 rounded-full" style="border-color: ${team.color};">
-                        <div><h2 class="text-3xl font-black text-white">${teamName}</h2><p class="text-blue-300 font-semibold">${team.citta}, ${team.regione}</p></div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <h3 class="font-bold text-xl mb-3 text-white"><i class="fas fa-route mr-2 text-cyan-300"></i>Info di Viaggio</h3>
-                            <div class="p-3 bg-gray-900/50 rounded-lg text-sm space-y-2"><p><strong class="text-gray-300">Distanza da Torre dell'Orso:</strong> ${distance.toFixed(0)} km</p><p><strong class="text-gray-300">Tempo stimato:</strong> ${travelTimeFormatted}</p></div>
-                            <h3 class="font-bold text-xl mt-4 mb-3 text-white"><i class="fas fa-map-marked-alt mr-2 text-orange-300"></i>Mappa</h3>
-                            <div class="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden border-2 border-gray-600"><iframe class="w-full h-full" frameborder="0" scrolling="no" src="https://www.openstreetmap.org/export/embed.html?bbox=${team.coords.lon-0.1},${team.coords.lat-0.1},${team.coords.lon+0.1},${team.coords.lat+0.1}&layer=mapnik&marker=${team.coords.lat},${team.coords.lon}"></iframe></div>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-xl mb-3 text-white"><i class="fas fa-users mr-2 text-green-300"></i>Muro del Tifo</h3>
-                            <div id="tifoWall" class="tifo-wall p-3 bg-gray-900/50 rounded-lg space-y-3 mb-3"><p class="text-gray-500 text-sm">Caricamento messaggi...</p></div>
-                            <form id="tifoForm" class="flex gap-2"><input type="text" id="tifoAuthor" placeholder="Il tuo nome" class="bg-gray-800 border border-gray-600 rounded-full py-2 px-3 text-sm w-1/3 focus:outline-none focus:ring-1 focus:ring-blue-500" required><input type="text" id="tifoMessage" placeholder="Lascia un messaggio!" class="bg-gray-800 border border-gray-600 rounded-full py-2 px-3 text-sm w-2/3 focus:outline-none focus:ring-1 focus:ring-blue-500" required><button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full px-4 text-sm"><i class="fas fa-paper-plane"></i></button></form>
-                        </div>
-                    </div>
-                </div>`;
-
-            const tifoWall = document.getElementById('tifoWall');
-            const tifoMessagesRef = collection(db, tifoCollectionPath, teamName, "messages");
-            const tifoQuery = query(tifoMessagesRef, orderBy("timestamp", "desc"));
-            unsubscribeTifo = onSnapshot(tifoQuery, (snapshot) => {
-                if (snapshot.empty) { tifoWall.innerHTML = '<p class="text-gray-500 text-sm">Nessun messaggio. Sii il primo a tifare!</p>'; return; }
-                tifoWall.innerHTML = snapshot.docs.map(doc => {
-                    const data = doc.data();
-                    const date = data.timestamp?.toDate().toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'}) || '';
-                    return `<div class="tifo-message p-2 rounded-lg text-sm"><div class="flex justify-between items-center"><strong class="text-blue-300">${data.author || 'Anonimo'}</strong><span class="text-xs text-gray-400">${date}</span></div><p class="text-gray-200 mt-1">${data.message}</p></div>`;
-                }).join('');
-            });
+                if (upcomingMatches.length > 0) {
+                    const nextMatch = upcomingMatches[0];
+                    document.getElementById('next-match-time').textContent = nextMatch.ora;
+                    document.getElementById('next-match-details').innerHTML = `
+                        <span class="font-semibold">${nextMatch.casa}</span> vs 
+                        <span class="font-semibold">${nextMatch.ospite}</span>
+                        <p class="text-xs text-gray-400">${nextMatch.categoria} - ${nextMatch.giorno}</p>
+                    `;
+                } else {
+                    document.getElementById('next-match-time').textContent = "Fine";
+                    document.getElementById('next-match-details').textContent = "Nessuna partita in programma";
+                }
+            }
             
-            document.getElementById('tifoForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const authorEl = document.getElementById('tifoAuthor');
-                const messageEl = document.getElementById('tifoMessage');
-                if (messageEl.value.trim() === '') return;
+            function updateStats() {
+                const now = new Date();
+                const playedMatches = allMatches.filter(match => {
+                    const [year, month, day] = match.data.split('-');
+                    const [hours, minutes] = match.ora.split(':');
+                    const matchTime = new Date(year, month - 1, day, hours, minutes);
+                    return matchTime < now && !match.isFinale;
+                });
                 
-                await addDoc(collection(db, tifoCollectionPath, teamName, "messages"), { author: authorEl.value.trim() || 'Tifoso', message: messageEl.value.trim(), timestamp: serverTimestamp() });
-                messageEl.value = '';
-            });
+                const totalGoals = allMatches.reduce((sum, match) => sum + (match.scoreCasa || 0) + (match.scoreOspite || 0), 0);
+                
+                document.getElementById('matches-played').textContent = playedMatches.length;
+                document.getElementById('total-goals').textContent = totalGoals;
+            }
 
-            modalEl.classList.remove('opacity-0', 'pointer-events-none');
-        };
+            function setupFilters() {
+                const days = [...new Set(initialMatches.map(m => m.giorno))];
+                const categories = [...new Set(initialMatches.map(m => m.categoria))];
+                
+                dayFilterEl.innerHTML = days.map(day => `<button class="filter-btn text-sm font-bold py-2 px-4 rounded-full" data-filter-type="day" data-value="${day}">${day}</button>`).join('');
+                categoryFilterEl.innerHTML = categories.map(cat => `<button class="filter-btn text-sm font-bold py-2 px-4 rounded-full" data-filter-type="category" data-value="${cat}">${cat}</button>`).join('');
+                
+                updateActiveFilters();
+            }
 
-        window.closeModal = () => {
-            if (unsubscribeTifo) unsubscribeTifo();
-            modalEl.classList.add('opacity-0', 'pointer-events-none');
-        };
-
-        // --- GESTIONE AUTENTICAZIONE E CARICAMENTO DATI ---
-        document.addEventListener('DOMContentLoaded', () => {
-            const interactiveIcon = document.getElementById('interactive-icon');
-            if(interactiveIcon) {
-                interactiveIcon.addEventListener('click', () => {
-                    interactiveIcon.classList.toggle('is-flipped');
-                    if (interactiveIcon.classList.contains('is-flipped')) {
-                        updateStats();
+            function updateActiveFilters() {
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.value === currentFilters[btn.dataset.filterType]) {
+                        btn.classList.add('active');
                     }
                 });
             }
 
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    currentUserId = user.uid;
-                    const matchesCollectionRef = collection(db, matchesCollectionPath);
-                    try {
-                        const initialCheck = await getDocs(matchesCollectionRef);
-                        if (initialCheck.empty) { await seedDatabase(); }
-                        
-                        onSnapshot(matchesCollectionRef, (snapshot) => {
-                            allMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                            allMatches.sort((a,b) => a.data.localeCompare(b.data) || a.ora.localeCompare(b.ora));
-                            if (dayFilterEl.innerHTML === '') { setupFilters(); }
-                            renderMatchesUI();
-                            updateInteractiveIcon();
-                            updateStats();
-                            loaderOverlay.classList.add('hidden');
-                        });
-                    } catch (error) {
-                        console.error("Errore durante il controllo o il caricamento dei dati: ", error);
-                        loaderOverlay.innerHTML = '<p class="text-red-400">Impossibile caricare i dati del torneo.</p>';
+            function renderMatchesUI() {
+                const filtered = allMatches.filter(m => 
+                    m.giorno === currentFilters.day &&
+                    m.categoria === currentFilters.category &&
+                    (m.casa.toLowerCase().includes(currentFilters.team) || m.ospite.toLowerCase().includes(currentFilters.team))
+                );
+                noResultsEl.classList.toggle('hidden', filtered.length > 0);
+                
+                matchListEl.innerHTML = filtered.map(match => {
+                    const homeInfo = teamStaticData[match.casa];
+                    const awayInfo = teamStaticData[match.ospite];
+                    
+                    if (match.isFinale || !homeInfo || !awayInfo) { 
+                        return `
+                        <div class="glass-card flex flex-col justify-center items-center p-4 text-center bg-gradient-to-br from-yellow-400/20 to-orange-500/20">
+                            <i class="fas fa-trophy text-4xl text-yellow-300 mb-4"></i>
+                            <h3 class="font-black text-xl text-white">FINALE</h3>
+                            <p class="text-yellow-200">${match.categoria}</p>
+                            <p class="mt-2 font-bold text-lg">${match.ora}</p>
+                        </div>`;
                     }
-                } else {
-                     signInAnonymously(auth).catch(err => console.error("Accesso anonimo fallito:", err));
+
+                    const now = new Date();
+                    const [hours, minutes] = match.ora.split(':');
+                    const [year, month, day] = match.data.split('-');
+                    const matchTime = new Date(year, month - 1, day, hours, minutes);
+                    const isMatchFinished = now > matchTime;
+
+                    const totalVotes = (match.mvpVotes?.[match.casa] || 0) + (match.mvpVotes?.[match.ospite] || 0);
+                    const homeVotePerc = totalVotes > 0 ? ((match.mvpVotes[match.casa] || 0) / totalVotes * 100).toFixed(0) : 0;
+                    const awayVotePerc = totalVotes > 0 ? ((match.mvpVotes[match.ospite] || 0) / totalVotes * 100).toFixed(0) : 0;
+                    
+                    return `
+                    <div class="glass-card flex flex-col justify-between p-4" data-id="${match.id}">
+                        <div>
+                            <div class="flex items-center justify-between text-center mb-4">
+                                <div class="w-1/3 flex flex-col items-center">
+                                    <img src="${homeInfo.logo}" alt="${match.casa}" class="team-logo mb-2">
+                                    <h3 class="font-bold text-sm team-link" onclick='window.showTeamDetails(${JSON.stringify(match.casa)})'>${match.casa}</h3>
+                                </div>
+                                <div class="w-1/3">
+                                    <div class="score-display text-white">${match.scoreCasa || 0} - ${match.scoreOspite || 0}</div>
+                                    <div class="text-sm text-gray-400 font-bold">${match.ora}</div>
+                                </div>
+                                <div class="w-1/3 flex flex-col items-center">
+                                    <img src="${awayInfo.logo}" alt="${match.ospite}" class="team-logo mb-2">
+                                    <h3 class="font-bold text-sm team-link" onclick='window.showTeamDetails(${JSON.stringify(match.ospite)})'>${match.ospite}</h3>
+                                </div>
+                            </div>
+                             <div class="flex justify-around text-xs my-2">
+                                <div class="text-center">
+                                    <button class="score-btn p-2" data-team-type="scoreCasa" data-action="increment"><i class="fas fa-plus-circle text-green-400 text-lg"></i></button>
+                                    <button class="score-btn p-2" data-team-type="scoreCasa" data-action="decrement"><i class="fas fa-minus-circle text-red-400 text-lg"></i></button>
+                                </div>
+                                <div class="text-center">
+                                    <button class="score-btn p-2" data-team-type="scoreOspite" data-action="increment"><i class="fas fa-plus-circle text-green-400 text-lg"></i></button>
+                                    <button class="score-btn p-2" data-team-type="scoreOspite" data-action="decrement"><i class="fas fa-minus-circle text-red-400 text-lg"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mvp-section mt-4 pt-4 border-t border-gray-600 ${isMatchFinished ? '' : 'hidden'}">
+                            <h4 class="text-center font-bold text-sm mb-2 text-blue-300">Man of the Match</h4>
+                            <div class="text-xs space-y-2">
+                                <button class="w-full text-left p-2 rounded bg-gray-700 hover:bg-gray-600 mvp-vote-btn" data-team-name='${match.casa}' ${match.voters?.includes(currentUserId) ? 'disabled' : ''}>
+                                    ${match.casa} <span class="float-right font-bold">${homeVotePerc}%</span>
+                                    <div class="w-full bg-gray-500 rounded-full h-1.5 mt-1"><div class="bg-blue-400 h-1.5 rounded-full" style="width: ${homeVotePerc}%"></div></div>
+                                </button>
+                                <button class="w-full text-left p-2 rounded bg-gray-700 hover:bg-gray-600 mvp-vote-btn" data-team-name='${match.ospite}' ${match.voters?.includes(currentUserId) ? 'disabled' : ''}>
+                                    ${match.ospite} <span class="float-right font-bold">${awayVotePerc}%</span>
+                                    <div class="w-full bg-gray-500 rounded-full h-1.5 mt-1"><div class="bg-blue-400 h-1.5 rounded-full" style="width: ${awayVotePerc}%"></div></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            }
+
+            function calculateDistance(coords1, coords2) {
+                const R = 6371; // Radius of the Earth in km
+                const dLat = (coords2.lat - coords1.lat) * Math.PI / 180;
+                const dLon = (coords2.lon - coords1.lon) * Math.PI / 180;
+                const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(coords1.lat * Math.PI / 180) * Math.cos(coords2.lat * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                return R * c;
+            }
+
+            window.showTeamDetails = (teamName) => {
+                if (unsubscribeTifo) unsubscribeTifo();
+
+                const team = teamStaticData[teamName];
+                if(!team || !team.coords) return;
+
+                const distance = calculateDistance(team.coords, venueCoords);
+                const travelTime = (distance / 80) * 60; // Assumendo una media di 80 km/h
+                const travelTimeFormatted = travelTime > 60 ? `${Math.floor(travelTime / 60)}h ${Math.round(travelTime % 60)}m` : `${Math.round(travelTime)} min`;
+
+                modalBodyEl.innerHTML = `
+                    <div class="p-6 md:p-8 relative">
+                        <button onclick="window.closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+                        <div class="flex items-center mb-6">
+                            <img src="${team.logo}" alt="${teamName}" class="w-16 h-16 mr-4 border-4 rounded-full" style="border-color: ${team.color};">
+                            <div><h2 class="text-3xl font-black text-white">${teamName}</h2><p class="text-blue-300 font-semibold">${team.citta}, ${team.regione}</p></div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="font-bold text-xl mb-3 text-white"><i class="fas fa-route mr-2 text-cyan-300"></i>Info di Viaggio</h3>
+                                <div class="p-3 bg-gray-900/50 rounded-lg text-sm space-y-2"><p><strong class="text-gray-300">Distanza da Torre dell'Orso:</strong> ${distance.toFixed(0)} km</p><p><strong class="text-gray-300">Tempo stimato:</strong> ${travelTimeFormatted}</p></div>
+                                <h3 class="font-bold text-xl mt-4 mb-3 text-white"><i class="fas fa-map-marked-alt mr-2 text-orange-300"></i>Mappa</h3>
+                                <div class="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden border-2 border-gray-600"><iframe class="w-full h-full" frameborder="0" scrolling="no" src="https://www.openstreetmap.org/export/embed.html?bbox=${team.coords.lon-0.1},${team.coords.lat-0.1},${team.coords.lon+0.1},${team.coords.lat+0.1}&layer=mapnik&marker=${team.coords.lat},${team.coords.lon}"></iframe></div>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-xl mb-3 text-white"><i class="fas fa-users mr-2 text-green-300"></i>Muro del Tifo</h3>
+                                <div id="tifoWall" class="tifo-wall p-3 bg-gray-900/50 rounded-lg space-y-3 mb-3"><p class="text-gray-500 text-sm">Caricamento messaggi...</p></div>
+                                <form id="tifoForm" class="flex gap-2"><input type="text" id="tifoAuthor" placeholder="Il tuo nome" class="bg-gray-800 border border-gray-600 rounded-full py-2 px-3 text-sm w-1/3 focus:outline-none focus:ring-1 focus:ring-blue-500" required><input type="text" id="tifoMessage" placeholder="Lascia un messaggio!" class="bg-gray-800 border border-gray-600 rounded-full py-2 px-3 text-sm w-2/3 focus:outline-none focus:ring-1 focus:ring-blue-500" required><button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full px-4 text-sm"><i class="fas fa-paper-plane"></i></button></form>
+                            </div>
+                        </div>
+                    </div>`;
+
+                const tifoWall = document.getElementById('tifoWall');
+                const tifoMessagesRef = collection(db, tifoCollectionPath, teamName, "messages");
+                const tifoQuery = query(tifoMessagesRef, orderBy("timestamp", "desc"));
+                unsubscribeTifo = onSnapshot(tifoQuery, (snapshot) => {
+                    if (snapshot.empty) { tifoWall.innerHTML = '<p class="text-gray-500 text-sm">Nessun messaggio. Sii il primo a tifare!</p>'; return; }
+                    tifoWall.innerHTML = snapshot.docs.map(doc => {
+                        const data = doc.data();
+                        const date = data.timestamp?.toDate().toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'}) || '';
+                        return `<div class="tifo-message p-2 rounded-lg text-sm"><div class="flex justify-between items-center"><strong class="text-blue-300">${data.author || 'Anonimo'}</strong><span class="text-xs text-gray-400">${date}</span></div><p class="text-gray-200 mt-1">${data.message}</p></div>`;
+                    }).join('');
+                });
+                
+                document.getElementById('tifoForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const authorEl = document.getElementById('tifoAuthor');
+                    const messageEl = document.getElementById('tifoMessage');
+                    if (messageEl.value.trim() === '') return;
+                    
+                    await addDoc(collection(db, tifoCollectionPath, teamName, "messages"), { author: authorEl.value.trim() || 'Tifoso', message: messageEl.value.trim(), timestamp: serverTimestamp() });
+                    messageEl.value = '';
+                });
+
+                modalEl.classList.remove('opacity-0', 'pointer-events-none');
+            };
+
+            window.closeModal = () => {
+                if (unsubscribeTifo) unsubscribeTifo();
+                modalEl.classList.add('opacity-0', 'pointer-events-none');
+            };
+
+            // --- GESTIONE AUTENTICAZIONE E CARICAMENTO DATI ---
+            document.addEventListener('DOMContentLoaded', () => {
+                const interactiveIcon = document.getElementById('interactive-icon');
+                if(interactiveIcon) {
+                    interactiveIcon.addEventListener('click', () => {
+                        interactiveIcon.classList.toggle('is-flipped');
+                        if (interactiveIcon.classList.contains('is-flipped')) {
+                            updateStats();
+                        }
+                    });
+                }
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUserId = user.uid;
+                        const matchesCollectionRef = collection(db, matchesCollectionPath);
+                        try {
+                            const initialCheck = await getDocs(matchesCollectionRef);
+                            if (initialCheck.empty) { await seedDatabase(); }
+                            
+                            onSnapshot(matchesCollectionRef, (snapshot) => {
+                                allMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                                allMatches.sort((a,b) => a.data.localeCompare(b.data) || a.ora.localeCompare(b.ora));
+                                if (dayFilterEl.innerHTML === '') { setupFilters(); }
+                                renderMatchesUI();
+                                updateInteractiveIcon();
+                                updateStats();
+                                loaderOverlay.classList.add('hidden');
+                            });
+                        } catch (error) {
+                            console.error("Errore durante il controllo o il caricamento dei dati: ", error);
+                            loaderOverlay.innerHTML = '<p class="text-red-400">Impossibile caricare i dati del torneo.</p>';
+                        }
+                    } else {
+                         signInAnonymously(auth).catch(err => console.error("Accesso anonimo fallito:", err));
+                    }
+                });
+                
+                signInAnonymously(auth);
+            });
+
+            // --- EVENT LISTENERS GLOBALI ---
+            teamFilterEl.addEventListener('input', (e) => { currentFilters.team = e.target.value.toLowerCase(); renderMatchesUI(); });
+            document.querySelector('.container').addEventListener('click', (e) => {
+                if(e.target.closest('.filter-btn')) {
+                    const btn = e.target.closest('.filter-btn');
+                    currentFilters[btn.dataset.filterType] = btn.dataset.value;
+                    updateActiveFilters();
+                    renderMatchesUI();
                 }
             });
-            
-            signInAnonymously(auth);
-        });
 
-        // --- EVENT LISTENERS GLOBALI ---
-        teamFilterEl.addEventListener('input', (e) => { currentFilters.team = e.target.value.toLowerCase(); renderMatchesUI(); });
-        document.querySelector('.container').addEventListener('click', (e) => {
-            if(e.target.closest('.filter-btn')) {
-                const btn = e.target.closest('.filter-btn');
-                currentFilters[btn.dataset.filterType] = btn.dataset.value;
-                updateActiveFilters();
-                renderMatchesUI();
-            }
-        });
+            modalEl.addEventListener('click', (e) => { if (e.target === modalEl) window.closeModal(); });
+            document.addEventListener('keydown', (e) => { if (e.key === "Escape") window.closeModal(); });
 
-        modalEl.addEventListener('click', (e) => { if (e.target === modalEl) window.closeModal(); });
-        document.addEventListener('keydown', (e) => { if (e.key === "Escape") window.closeModal(); });
+            matchListEl.addEventListener('click', async (e) => {
+                const scoreBtn = e.target.closest('.score-btn');
+                const mvpBtn = e.target.closest('.mvp-vote-btn');
 
-        matchListEl.addEventListener('click', async (e) => {
-            const scoreBtn = e.target.closest('.score-btn');
-            const mvpBtn = e.target.closest('.mvp-vote-btn');
-
-            if (scoreBtn) {
-                const card = scoreBtn.closest('.glass-card');
-                const matchId = card.dataset.id;
-                if (!matchId) return;
-                const matchRef = doc(db, matchesCollectionPath, matchId);
-                const value = scoreBtn.dataset.action === 'increment' ? 1 : -1;
-                const currentScore = allMatches.find(m => m.id === matchId)?.[scoreBtn.dataset.teamType] || 0;
-                if(currentScore + value < 0) return;
-                await updateDoc(matchRef, { [scoreBtn.dataset.teamType]: increment(value) });
-            }
-
-            if (mvpBtn && !mvpBtn.disabled) {
-                const card = mvpBtn.closest('.glass-card');
-                const matchId = card.dataset.id;
-                if (!matchId) return;
-                const teamName = mvpBtn.dataset.teamName;
-                const matchRef = doc(db, matchesCollectionPath, matchId);
-                const currentVoters = allMatches.find(m => m.id === matchId)?.voters || [];
-                if (!currentVoters.includes(currentUserId)) {
-                    await updateDoc(matchRef, { [`mvpVotes.${teamName}`]: increment(1), voters: [...currentVoters, currentUserId] });
+                if (scoreBtn) {
+                    const card = scoreBtn.closest('.glass-card');
+                    const matchId = card.dataset.id;
+                    if (!matchId) return;
+                    const matchRef = doc(db, matchesCollectionPath, matchId);
+                    const value = scoreBtn.dataset.action === 'increment' ? 1 : -1;
+                    const currentScore = allMatches.find(m => m.id === matchId)?.[scoreBtn.dataset.teamType] || 0;
+                    if(currentScore + value < 0) return;
+                    await updateDoc(matchRef, { [scoreBtn.dataset.teamType]: increment(value) });
                 }
-            }
-        });
 
+                if (mvpBtn && !mvpBtn.disabled) {
+                    const card = mvpBtn.closest('.glass-card');
+                    const matchId = card.dataset.id;
+                    if (!matchId) return;
+                    const teamName = mvpBtn.dataset.teamName;
+                    const matchRef = doc(db, matchesCollectionPath, matchId);
+                    const currentVoters = allMatches.find(m => m.id === matchId)?.voters || [];
+                    if (!currentVoters.includes(currentUserId)) {
+                        await updateDoc(matchRef, { [`mvpVotes.${teamName}`]: increment(1), voters: [...currentVoters, currentUserId] });
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>
+
 
