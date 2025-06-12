@@ -210,7 +210,7 @@
         const modalEl = document.getElementById('teamModal');
         const modalBodyEl = document.getElementById('modalBody');
         const loaderOverlay = document.getElementById('loader-overlay');
-        const interactiveIcon = document.getElementById('interactive-icon');
+        
         let currentUserId = null;
         let unsubscribeTifo = null;
         let allMatches = [];
@@ -353,11 +353,11 @@
                     <div class="mvp-section mt-4 pt-4 border-t border-gray-600 ${isMatchFinished ? '' : 'hidden'}">
                         <h4 class="text-center font-bold text-sm mb-2 text-blue-300">Man of the Match</h4>
                         <div class="text-xs space-y-2">
-                            <button class="w-full text-left p-2 rounded bg-gray-700 hover:bg-gray-600 mvp-vote-btn" data-team-name="${match.casa}" ${match.voters?.includes(currentUserId) ? 'disabled' : ''}>
+                            <button class="w-full text-left p-2 rounded bg-gray-700 hover:bg-gray-600 mvp-vote-btn" data-team-name='${match.casa}' ${match.voters?.includes(currentUserId) ? 'disabled' : ''}>
                                 ${match.casa} <span class="float-right font-bold">${homeVotePerc}%</span>
                                 <div class="w-full bg-gray-500 rounded-full h-1.5 mt-1"><div class="bg-blue-400 h-1.5 rounded-full" style="width: ${homeVotePerc}%"></div></div>
                             </button>
-                            <button class="w-full text-left p-2 rounded bg-gray-700 hover:bg-gray-600 mvp-vote-btn" data-team-name="${match.ospite}" ${match.voters?.includes(currentUserId) ? 'disabled' : ''}>
+                            <button class="w-full text-left p-2 rounded bg-gray-700 hover:bg-gray-600 mvp-vote-btn" data-team-name='${match.ospite}' ${match.voters?.includes(currentUserId) ? 'disabled' : ''}>
                                 ${match.ospite} <span class="float-right font-bold">${awayVotePerc}%</span>
                                 <div class="w-full bg-gray-500 rounded-full h-1.5 mt-1"><div class="bg-blue-400 h-1.5 rounded-full" style="width: ${awayVotePerc}%"></div></div>
                             </button>
@@ -440,33 +440,45 @@
         };
 
         // --- GESTIONE AUTENTICAZIONE E CARICAMENTO DATI ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUserId = user.uid;
-                const matchesCollectionRef = collection(db, matchesCollectionPath);
-                try {
-                    const initialCheck = await getDocs(matchesCollectionRef);
-                    if (initialCheck.empty) { await seedDatabase(); }
-                    
-                    onSnapshot(matchesCollectionRef, (snapshot) => {
-                        allMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        allMatches.sort((a,b) => a.data.localeCompare(b.data) || a.ora.localeCompare(b.ora));
-                        if (dayFilterEl.innerHTML === '') { setupFilters(); }
-                        renderMatchesUI();
-                        updateInteractiveIcon();
+        document.addEventListener('DOMContentLoaded', () => {
+            const interactiveIcon = document.getElementById('interactive-icon');
+            if(interactiveIcon) {
+                interactiveIcon.addEventListener('click', () => {
+                    interactiveIcon.classList.toggle('is-flipped');
+                    if (interactiveIcon.classList.contains('is-flipped')) {
                         updateStats();
-                        loaderOverlay.classList.add('hidden');
-                    });
-                } catch (error) {
-                    console.error("Errore durante il controllo o il caricamento dei dati: ", error);
-                    loaderOverlay.innerHTML = '<p class="text-red-400">Impossibile caricare i dati del torneo.</p>';
-                }
-            } else {
-                 signInAnonymously(auth).catch(err => console.error("Accesso anonimo fallito:", err));
+                    }
+                });
             }
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUserId = user.uid;
+                    const matchesCollectionRef = collection(db, matchesCollectionPath);
+                    try {
+                        const initialCheck = await getDocs(matchesCollectionRef);
+                        if (initialCheck.empty) { await seedDatabase(); }
+                        
+                        onSnapshot(matchesCollectionRef, (snapshot) => {
+                            allMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                            allMatches.sort((a,b) => a.data.localeCompare(b.data) || a.ora.localeCompare(b.ora));
+                            if (dayFilterEl.innerHTML === '') { setupFilters(); }
+                            renderMatchesUI();
+                            updateInteractiveIcon();
+                            updateStats();
+                            loaderOverlay.classList.add('hidden');
+                        });
+                    } catch (error) {
+                        console.error("Errore durante il controllo o il caricamento dei dati: ", error);
+                        loaderOverlay.innerHTML = '<p class="text-red-400">Impossibile caricare i dati del torneo.</p>';
+                    }
+                } else {
+                     signInAnonymously(auth).catch(err => console.error("Accesso anonimo fallito:", err));
+                }
+            });
+            
+            signInAnonymously(auth);
         });
-        
-        signInAnonymously(auth);
 
         // --- EVENT LISTENERS GLOBALI ---
         teamFilterEl.addEventListener('input', (e) => { currentFilters.team = e.target.value.toLowerCase(); renderMatchesUI(); });
@@ -476,13 +488,6 @@
                 currentFilters[btn.dataset.filterType] = btn.dataset.value;
                 updateActiveFilters();
                 renderMatchesUI();
-            }
-        });
-
-        interactiveIcon.addEventListener('click', () => {
-            interactiveIcon.classList.toggle('is-flipped');
-            if (interactiveIcon.classList.contains('is-flipped')) {
-                updateStats();
             }
         });
 
@@ -520,3 +525,4 @@
     </script>
 </body>
 </html>
+
