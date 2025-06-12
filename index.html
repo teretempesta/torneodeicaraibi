@@ -171,15 +171,44 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp, increment, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- CONFIGURAZIONE E DATI ---
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        // --- 1. CONFIGURAZIONE OBBLIGATORIA ---
+        // INCOLLA QUI I DATI DEL TUO PROGETTO FIREBASE.
+        // Li trovi nelle impostazioni del tuo progetto Firebase > Impostazioni progetto >
+        // nella sezione "Le tue app", seleziona la tua app web e copia l'oggetto di configurazione.
+        const firebaseConfig = {
+            apiKey: "INCOLLA_QUI_LA_TUA_API_KEY",
+            authDomain: "INCOLLA_QUI_IL_TUO_AUTH_DOMAIN",
+            projectId: "INCOLLA_QUI_IL_TUO_PROJECT_ID",
+            storageBucket: "INCOLLA_QUI_IL_TUO_STORAGE_BUCKET",
+            messagingSenderId: "INCOLLA_QUI_IL_TUO_MESSAGING_SENDER_ID",
+            appId: "INCOLLA_QUI_IL_TUO_APP_ID"
+        };
+        
+        const appId = "tournament-hub-2025-salento"; // Puoi lasciare questo o cambiarlo
+        const matchesCollectionPath = `artifacts/${appId}/public/data/matches`;
+        const tifoCollectionPath = `artifacts/${appId}/public/data/tifo`;
+
+        // --- FINE CONFIGURAZIONE ---
+
+
+        const loaderOverlay = document.getElementById('loader-overlay');
+
+        // Controllo di configurazione
+        if (firebaseConfig.apiKey === "INCOLLA_QUI_LA_TUA_API_KEY") {
+            loaderOverlay.innerHTML = `
+                <div class="text-center p-4">
+                    <i class="fas fa-exclamation-triangle text-4xl text-yellow-400 mb-4"></i>
+                    <h2 class="text-xl font-bold text-white mb-2">Configurazione Mancante</h2>
+                    <p class="text-gray-300">Devi inserire i dati del tuo progetto Firebase nel file <strong>index.html</strong> per far funzionare l'app.</p>
+                </div>
+            `;
+            throw new Error("Configurazione Firebase non inserita.");
+        }
+        
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-tournament-app-v2';
-        const matchesCollectionPath = `artifacts/${appId}/public/data/matches`;
-        const tifoCollectionPath = `artifacts/${appId}/public/data/tifo`;
         const venueCoords = { lat: 40.2736, lon: 18.4239 }; // Torre dell'Orso
 
         const teamStaticData = {
@@ -209,7 +238,6 @@
         const noResultsEl = document.getElementById('noResults');
         const modalEl = document.getElementById('teamModal');
         const modalBodyEl = document.getElementById('modalBody');
-        const loaderOverlay = document.getElementById('loader-overlay');
         
         let currentUserId = null;
         let unsubscribeTifo = null;
