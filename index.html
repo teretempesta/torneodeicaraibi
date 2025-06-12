@@ -171,14 +171,11 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp, increment, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-   // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        // --- 1. CONFIGURAZIONE OBBLIGATORIA ---
+        // INCOLLA QUI I DATI DEL TUO PROGETTO FIREBASE.
+        // Li trovi nelle impostazioni del tuo progetto Firebase > Impostazioni progetto >
+        // nella sezione "Le tue app", seleziona la tua app web e copia l'oggetto di configurazione.
+   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAq8KZECo6zRTeg4TQQA_vY5hMm1zVPuSg",
   authDomain: "torneodeicaraibi.firebaseapp.com",
@@ -187,11 +184,7 @@ const firebaseConfig = {
   messagingSenderId: "107049021480",
   appId: "1:107049021480:web:53ec20b27be3443b63451d",
   measurementId: "G-TVMC8XPPVH"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);;
+};;
         
         const appId = "tournament-hub-2025-salento"; // Puoi lasciare questo o cambiarlo
         const matchesCollectionPath = `artifacts/${appId}/public/data/matches`;
@@ -558,6 +551,3 @@ const analytics = getAnalytics(app);;
     </script>
 </body>
 </html>
-
-
-
