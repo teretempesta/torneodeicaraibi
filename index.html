@@ -171,15 +171,17 @@
         import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp, increment, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- CONFIGURAZIONE AUTOMATICA (per ambiente di sviluppo) ---
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-tournament-app-v2';
+       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
         
-        const matchesCollectionPath = `artifacts/${appId}/public/data/matches`;
-        const tifoCollectionPath = `artifacts/${appId}/public/data/tifo`;
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+const firebaseConfig = {
+  apiKey: "AIzaSyAq8KZECo6zRTeg4TQQA_vY5hMm1zVPuSg",
+  authDomain: "torneodeicaraibi.firebaseapp.com",
+  projectId: "torneodeicaraibi",
+  storageBucket: "torneodeicaraibi.firebasestorage.app",
+  messagingSenderId: "107049021480",
+  appId: "1:107049021480:web:53ec20b27be3443b63451d",
+  measurementId: "G-TVMC8XPPVH"
+};
         
         const venueCoords = { lat: 40.2736, lon: 18.4239 };
 
